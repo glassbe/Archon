@@ -25,8 +25,7 @@ from archon.pydantic_ai_coder import pydantic_ai_coder, PydanticAIDeps, list_doc
 from utils.utils import get_env_var
 
 # Load environment variables
-env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'iterations', 'v1-single-agent', '.env')
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 # Configure logfire to suppress warnings (optional)
 logfire.configure(send_to_logfire='never')
@@ -40,6 +39,7 @@ is_openai = "openai" in base_url.lower()
 
 reasoner_llm_model_name = get_env_var('REASONER_MODEL') or 'o3-mini'
 reasoner_llm_model = AnthropicModel(reasoner_llm_model_name, api_key=api_key) if is_anthropic else OpenAIModel(reasoner_llm_model_name, base_url=base_url, api_key=api_key)
+
 reasoner = Agent(  
     reasoner_llm_model,
     system_prompt='You are an expert at coding AI agents with Pydantic AI and defining the scope for doing so.',  
@@ -48,7 +48,6 @@ reasoner = Agent(
 primary_llm_model_name = get_env_var('PRIMARY_MODEL') or 'gpt-4o-mini'
 primary_llm_model = AnthropicModel(primary_llm_model_name, api_key=api_key) if is_anthropic else OpenAIModel(primary_llm_model_name, base_url=base_url, api_key=api_key)
 
->>>>>>> upstream/main
 router_agent = Agent(  
     primary_llm_model,
     system_prompt='Your job is to route the user message either to the end of the conversation or to continue coding the AI agent.',  
