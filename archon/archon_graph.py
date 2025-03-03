@@ -23,21 +23,22 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from archon.pydantic_ai_coder import pydantic_ai_coder, PydanticAIDeps, list_documentation_pages_helper
 
 # Load environment variables
-load_dotenv()
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'iterations', 'v1-single-agent', '.env')
+load_dotenv(dotenv_path=env_path)
 
 # Configure logfire to suppress warnings (optional)
 logfire.configure(send_to_logfire='never')
 
 base_url = os.getenv('BASE_URL', 'https://api.openai.com/v1')
-api_key = os.getenv('LLM_API_KEY', 'no-llm-api-key-provided')
+api_key = os.getenv('OPENAI_API_KEY')
 is_ollama = "localhost" in base_url.lower()
-reasoner_llm_model = os.getenv('REASONER_MODEL', 'o3-mini')
+reasoner_llm_model = os.getenv('LLM_MODEL', 'o1-mini')
 reasoner = Agent(  
     OpenAIModel(reasoner_llm_model, base_url=base_url, api_key=api_key),
     system_prompt='You are an expert at coding AI agents with Pydantic AI and defining the scope for doing so.',  
 )
 
-primary_llm_model = os.getenv('PRIMARY_MODEL', 'gpt-4o-mini')
+primary_llm_model = os.getenv('LLM_MODEL', 'o1-mini')
 router_agent = Agent(  
     OpenAIModel(primary_llm_model, base_url=base_url, api_key=api_key),
     system_prompt='Your job is to route the user message either to the end of the conversation or to continue coding the AI agent.',  
