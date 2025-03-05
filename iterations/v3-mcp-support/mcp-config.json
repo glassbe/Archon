@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "archon": {
-      "command": "[path to Archon]\\archon\\venv\\Scripts\\python.exe",
+      "command": "/Users/benediktglass/CascadeProjects/Archon/venv/bin/python",
       "args": [
-        "[path to Archon]\\archon\\mcp_server.py"
+        "/Users/benediktglass/CascadeProjects/Archon/iterations/v3-mcp-support/mcp_server.py"
       ]
     }
   }

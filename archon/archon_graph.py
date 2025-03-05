@@ -48,7 +48,6 @@ reasoner = Agent(
 primary_llm_model_name = get_env_var('PRIMARY_MODEL') or 'gpt-4o-mini'
 primary_llm_model = AnthropicModel(primary_llm_model_name, api_key=api_key) if is_anthropic else OpenAIModel(primary_llm_model_name, base_url=base_url, api_key=api_key)
 
->>>>>>> upstream/main
 router_agent = Agent(  
     primary_llm_model,
     system_prompt='Your job is to route the user message either to the end of the conversation or to continue coding the AI agent.',  

@@ -29,10 +29,22 @@ base_url = os.getenv('BASE_URL', 'https://api.openai.com/v1')
 api_key = os.getenv('LLM_API_KEY', 'no-llm-api-key-provided')
 is_ollama = "localhost" in base_url.lower()
 reasoner_llm_model = os.getenv('REASONER_MODEL', 'o3-mini')
-reasoner = Agent(  
-    OpenAIModel(reasoner_llm_model, base_url=base_url, api_key=api_key),
-    system_prompt='You are an expert at coding AI agents with Pydantic AI and defining the scope for doing so.',  
-)
+
+# Check if the model is one that doesn't support system messages
+no_system_msg_models = ['o1-mini']
+if reasoner_llm_model in no_system_msg_models:
+    # For models that don't support system messages, use a developer message instead
+    reasoner = Agent(
+        OpenAIModel(reasoner_llm_model, base_url=base_url, api_key=api_key),
+        # No system prompt for models that don't support it
+    )
+    # We'll prepend the system message content to the first user message in the define_scope_with_reasoner function
+else:
+    # For models that support system messages
+    reasoner = Agent(  
+        OpenAIModel(reasoner_llm_model, base_url=base_url, api_key=api_key),
+        system_prompt='You are an expert at coding AI agents with Pydantic AI and defining the scope for doing so.',  
+    )
 
 primary_llm_model = os.getenv('PRIMARY_MODEL', 'gpt-4o-mini')
 router_agent = Agent(  
@@ -70,7 +82,7 @@ async def define_scope_with_reasoner(state: AgentState):
     documentation_pages_str = "\n".join(documentation_pages)
 
     # Then, use the reasoner to define the scope
-    prompt = f"""
+    base_prompt = f"""
     User AI Agent Request: {state['latest_user_message']}
     
     Create detailed scope document for the AI agent including:
@@ -85,6 +97,13 @@ async def define_scope_with_reasoner(state: AgentState):
 
     Include a list of documentation pages that are relevant to creating this agent for the user in the scope document.
     """
+    
+    # For models that don't support system messages, prepend the system message content
+    if reasoner_llm_model in no_system_msg_models:
+        system_content = 'You are an expert at coding AI agents with Pydantic AI and defining the scope for doing so.\n\n'
+        prompt = system_content + base_prompt
+    else:
+        prompt = base_prompt
 
     result = await reasoner.run(prompt)
     scope = result.data
@@ -133,7 +152,7 @@ async def coder_agent(state: AgentState, writer):
 
 # Interrupt the graph to get the user's next message
 def get_next_user_message(state: AgentState):
-    value = interrupt({})
+    value = interrupt({""})
 
     # Set the user's latest message for the LLM to continue the conversation
     return {
